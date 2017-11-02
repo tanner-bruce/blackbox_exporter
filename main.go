@@ -39,6 +39,8 @@ import (
 
 	"github.com/prometheus/blackbox_exporter/config"
 	"github.com/prometheus/blackbox_exporter/prober"
+	"regexp"
+	"strings"
 )
 
 var (
@@ -105,6 +107,31 @@ func probeHandler(w http.ResponseWriter, r *http.Request, c *config.Config, logg
 		http.Error(w, "Target parameter is missing", 400)
 		return
 	}
+
+	replaceAll := func(re *regexp.Regexp, str string, repl func([]string) string) string {
+		result := ""
+		lastIndex := 0
+
+		for _, v := range re.FindAllSubmatchIndex([]byte(str), -1) {
+			groups := []string{}
+			for i := 0; i < len(v); i += 2 {
+				groups = append(groups, str[v[i]:v[i+1]])
+			}
+
+			result += str[lastIndex:v[0]] + repl(groups)
+			lastIndex = v[1]
+		}
+
+		return result + str[lastIndex:]
+	}
+
+	// it works
+	re, _ := regexp.Compile("{{(.*?)}}")
+
+	// if str = "abc{{def}}", ss will be ["{{def}}", "def"]
+	target = replaceAll(re, target, func(ss []string) string {
+		return os.Getenv(strings.Trim(strings.ToUpper(ss[1]), " "))
+	})
 
 	prober, ok := Probers[module.Prober]
 	if !ok {
@@ -177,9 +204,9 @@ func (sl scrapeLogger) Log(keyvals ...interface{}) error {
 // Returns plaintext debug output for a probe.
 func DebugOutput(module *config.Module, logBuffer *bytes.Buffer, registry *prometheus.Registry) string {
 	buf := &bytes.Buffer{}
-	fmt.Fprintf(buf, "Logs for the probe:\n")
+	fmt.Fprintln(buf, "Logs for the probe:")
 	logBuffer.WriteTo(buf)
-	fmt.Fprintf(buf, "\n\n\nMetrics that would have been returned:\n")
+	fmt.Fprint(buf, "\n\n\nMetrics that would have been returned:")
 	mfs, err := registry.Gather()
 	if err != nil {
 		fmt.Fprintf(buf, "Error gathering metrics: %s\n", err)
@@ -187,7 +214,7 @@ func DebugOutput(module *config.Module, logBuffer *bytes.Buffer, registry *prome
 	for _, mf := range mfs {
 		expfmt.MetricFamilyToText(buf, mf)
 	}
-	fmt.Fprintf(buf, "\n\n\nModule configuration:\n")
+	fmt.Fprint(buf, "\n\n\nModule configuration:")
 	c, err := yaml.Marshal(module)
 	if err != nil {
 		fmt.Fprintf(buf, "Error marshalling config: %s\n", err)
@@ -243,6 +270,8 @@ func main() {
 		}
 	}()
 
+
+	http.Handle("/metrics", promhttp.Handler())
 	http.HandleFunc("/-/reload",
 		func(w http.ResponseWriter, r *http.Request) {
 			if r.Method != "POST" {
@@ -257,13 +286,15 @@ func main() {
 				http.Error(w, fmt.Sprintf("failed to reload config: %s", err), http.StatusInternalServerError)
 			}
 		})
-	http.Handle("/metrics", promhttp.Handler())
+
+
 	http.HandleFunc("/probe", func(w http.ResponseWriter, r *http.Request) {
 		sc.Lock()
 		conf := sc.C
 		sc.Unlock()
 		probeHandler(w, r, conf, logger, rh)
 	})
+
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "text/html")
 		w.Write([]byte(`<html>
