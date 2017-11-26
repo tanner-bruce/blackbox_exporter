@@ -67,7 +67,7 @@ func probeHandler(w http.ResponseWriter, r *http.Request, c *config.Config, logg
 	}
 	module, ok := c.Modules[moduleName]
 	if !ok {
-		http.Error(w, fmt.Sprintf("Unknown module %q", moduleName), 400)
+		http.Error(w, fmt.Sprintf("Unknown module %q", moduleName), http.StatusBadRequest)
 		return
 	}
 
@@ -89,7 +89,7 @@ func probeHandler(w http.ResponseWriter, r *http.Request, c *config.Config, logg
 		timeoutSeconds = module.Timeout.Seconds()
 	}
 	timeoutSeconds -= *timeoutOffset
-	ctx, cancel := context.WithTimeout(context.Background(), time.Duration(timeoutSeconds*1e9))
+	ctx, cancel := context.WithTimeout(context.Background(), time.Duration(timeoutSeconds*float64(time.Second)))
 	defer cancel()
 	r = r.WithContext(ctx)
 
@@ -104,7 +104,7 @@ func probeHandler(w http.ResponseWriter, r *http.Request, c *config.Config, logg
 	params := r.URL.Query()
 	target := params.Get("target")
 	if target == "" {
-		http.Error(w, "Target parameter is missing", 400)
+		http.Error(w, "Target parameter is missing", http.StatusBadRequest)
 		return
 	}
 
@@ -135,7 +135,7 @@ func probeHandler(w http.ResponseWriter, r *http.Request, c *config.Config, logg
 
 	prober, ok := Probers[module.Prober]
 	if !ok {
-		http.Error(w, fmt.Sprintf("Unknown prober %q", module.Prober), 400)
+		http.Error(w, fmt.Sprintf("Unknown prober %q", module.Prober), http.StatusBadRequest)
 		return
 	}
 
