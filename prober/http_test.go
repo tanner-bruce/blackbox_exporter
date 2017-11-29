@@ -385,7 +385,7 @@ func TestFailIfNotMatchesJsonRegexpWithMatch(t *testing.T) {
 	recorder = httptest.NewRecorder()
 	registry = prometheus.NewRegistry()
 	result := ProbeHTTP(testCTX, ts.URL,
-		config.Module{Timeout: time.Second, HTTP: config.HTTPProbe{JsonMatches: []config.JSONMatch{
+		config.Module{Timeout: time.Second, HTTP: config.HTTPProbe{JSONMatches: []config.JSONMatch{
 			config.JSONMatch{
 				JsonPath:               "a.b.c",
 				FailIfNotMatchesRegexp: []string{"d"},
@@ -412,7 +412,7 @@ func TestFailIfNotMatchesJsonRegexpNoMatch(t *testing.T) {
 	recorder = httptest.NewRecorder()
 	registry = prometheus.NewRegistry()
 	result := ProbeHTTP(testCTX, ts.URL,
-		config.Module{Timeout: time.Second, HTTP: config.HTTPProbe{JsonMatches: []config.JSONMatch{
+		config.Module{Timeout: time.Second, HTTP: config.HTTPProbe{JSONMatches: []config.JSONMatch{
 			config.JSONMatch{
 				JsonPath:               "a.b.c",
 				FailIfNotMatchesRegexp: []string{"e"},
@@ -435,7 +435,7 @@ func TestFailIfMatchesJsonRegexNoMatch(t *testing.T) {
 	defer ts.Close()
 
 	result := ProbeHTTP(testCTX, ts.URL,
-		config.Module{Timeout: time.Second, HTTP: config.HTTPProbe{JsonMatches: []config.JSONMatch{
+		config.Module{Timeout: time.Second, HTTP: config.HTTPProbe{JSONMatches: []config.JSONMatch{
 			config.JSONMatch{
 				JsonPath:            "a.b.c",
 				FailIfMatchesRegexp: []string{"e"},
@@ -458,7 +458,7 @@ func TestFailIfMatchesJsonRegex(t *testing.T) {
 	defer ts.Close()
 
 	result := ProbeHTTP(testCTX, ts.URL,
-		config.Module{Timeout: time.Second, HTTP: config.HTTPProbe{JsonMatches: []config.JSONMatch{
+		config.Module{Timeout: time.Second, HTTP: config.HTTPProbe{JSONMatches: []config.JSONMatch{
 			config.JSONMatch{
 				JsonPath:            "a.b.c",
 				FailIfMatchesRegexp: []string{"d"},

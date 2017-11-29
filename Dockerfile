@@ -1,9 +1,10 @@
-FROM        quay.io/prometheus/busybox:latest
-MAINTAINER  The Prometheus Authors <prometheus-developers@googlegroups.com>
+FROM bitnami/minideb
+
+RUN install_packages ca-certificates
 
 COPY blackbox_exporter  /bin/blackbox_exporter
-COPY blackbox.yml       /etc/blackbox_exporter/config.yml
+COPY blackbox.yml       /config/blackbox.yml
 
 EXPOSE      9115
 ENTRYPOINT  [ "/bin/blackbox_exporter" ]
-CMD         [ "--config.file=/etc/blackbox_exporter/config.yml" ]
+CMD         [ "--config.file=/config/blackbox.yml" ]

@@ -80,9 +80,9 @@ func matchJsonExpressions(reader io.Reader, httpConfig config.HTTPProbe, logger 
 		return false
 	}
 	level.Debug(logger).Log("body", body)
-	for _, jsonp := range httpConfig.JsonMatches {
-		jsonMatch := gjson.GetBytes(body, jsonp.JsonPath)
-		level.Debug(logger).Log("json_path", jsonp.JsonPath)
+	for _, jsonp := range httpConfig.JSONMatches {
+		jsonMatch := gjson.GetBytes(body, jsonp.JSONPath)
+		level.Debug(logger).Log("json_path", jsonp.JSONPath)
 
 		matchesPassed := checkExps([]byte(jsonMatch.String()), jsonp.FailIfMatchesRegexp, false, logger)
 		notMatchesPassed := checkExps([]byte(jsonMatch.String()), jsonp.FailIfNotMatchesRegexp, true, logger)
@@ -355,7 +355,7 @@ func ProbeHTTP(ctx context.Context, target string, module config.Module, registr
 			}
 		}
 
-		if success && len(httpConfig.JsonMatches) > 0 {
+		if success && len(httpConfig.JSONMatches) > 0 {
 			success = matchJsonExpressions(resp.Body, httpConfig, logger)
 			if success {
 				probeFailedDueToJsonRegex.Set(0)

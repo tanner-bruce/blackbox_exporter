@@ -270,7 +270,6 @@ func main() {
 		}
 	}()
 
-
 	http.Handle("/metrics", promhttp.Handler())
 	http.HandleFunc("/-/reload",
 		func(w http.ResponseWriter, r *http.Request) {
@@ -286,7 +285,6 @@ func main() {
 				http.Error(w, fmt.Sprintf("failed to reload config: %s", err), http.StatusInternalServerError)
 			}
 		})
-
 
 	http.HandleFunc("/probe", func(w http.ResponseWriter, r *http.Request) {
 		sc.Lock()

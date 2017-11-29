@@ -58,7 +58,7 @@ type Module struct {
 }
 
 type JSONMatch struct {
-	JsonPath               string   `yaml:"key"`
+	JSONPath               string   `yaml:"key"`
 	FailIfMatchesRegexp    []string `yaml:"fail_if_matches_regexp,omitempty"`
 	FailIfNotMatchesRegexp []string `yaml:"fail_if_not_matches_regexp,omitempty"`
 
@@ -79,7 +79,7 @@ type HTTPProbe struct {
 	FailIfMatchesRegexp    []string                `yaml:"fail_if_matches_regexp,omitempty"`
 	FailIfNotMatchesRegexp []string                `yaml:"fail_if_not_matches_regexp,omitempty"`
 	Body                   string                  `yaml:"body,omitempty"`
-	JsonMatches            []JSONMatch             `yaml:"json_match,omitempty"`
+	JSONMatches            []JSONMatch             `yaml:"json_match,omitempty"`
 	HTTPClientConfig       config.HTTPClientConfig `yaml:"http_client_config,inline"`
 
 	// Catches all undefined fields and must be empty after parsing.
