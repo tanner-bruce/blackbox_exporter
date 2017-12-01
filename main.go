@@ -37,10 +37,10 @@ import (
 	"gopkg.in/alecthomas/kingpin.v2"
 	"gopkg.in/yaml.v2"
 
+	"regexp"
+
 	"github.com/prometheus/blackbox_exporter/config"
 	"github.com/prometheus/blackbox_exporter/prober"
-	"regexp"
-	"strings"
 )
 
 var (
@@ -108,29 +108,12 @@ func probeHandler(w http.ResponseWriter, r *http.Request, c *config.Config, logg
 		return
 	}
 
-	replaceAll := func(re *regexp.Regexp, str string, repl func([]string) string) string {
-		result := ""
-		lastIndex := 0
-
-		for _, v := range re.FindAllSubmatchIndex([]byte(str), -1) {
-			groups := []string{}
-			for i := 0; i < len(v); i += 2 {
-				groups = append(groups, str[v[i]:v[i+1]])
-			}
-
-			result += str[lastIndex:v[0]] + repl(groups)
-			lastIndex = v[1]
-		}
-
-		return result + str[lastIndex:]
-	}
-
-	// it works
 	re, _ := regexp.Compile("{{(.*?)}}")
-
-	// if str = "abc{{def}}", ss will be ["{{def}}", "def"]
-	target = replaceAll(re, target, func(ss []string) string {
-		return os.Getenv(strings.Trim(strings.ToUpper(ss[1]), " "))
+	target = re.ReplaceAllStringFunc(target, func(s string) string {
+		if e, ok := os.LookupEnv(s); ok {
+			return e
+		}
+		return s
 	})
 
 	prober, ok := Probers[module.Prober]
